@@ -1,12 +1,12 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends  # Import FastAPI framework and related utilities
-from pydantic import BaseModel, validator, Field  # Enhanced Pydantic imports for validation
-import motor.motor_asyncio  # Import MongoDB async driver
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends  
+from pydantic import BaseModel, validator, Field  
+import motor.motor_asyncio  
 from bson import ObjectId  # Import ObjectId for MongoDB ID handling
-import re  # Import regex for pattern matching validation
+import re  
     
-app = FastAPI()  # Initialize the FastAPI application
+app = FastAPI()  
 
-# Connect to MongoDB Atlas cloud database
+
 # Connection string contains username, password and cluster information
 client = motor.motor_asyncio.AsyncIOMotorClient("mongodb+srv://nikoladurdevicg52857:JKAbgHCQ6bUBP52N@gameassetsdb.0h54gnp.mongodb.net/?retryWrites=true&w=majority&appName=GameAssetsDB")
 db = client.gassetsDB  # Connect to the gassetsDB database
@@ -16,7 +16,7 @@ class PlayerScore(BaseModel):
     player_name: str = Field(..., min_length=2, max_length=50)  # Player name field with length constraints
     score: int = Field(..., ge=0)  # Score field (integer) with minimum value of 0
     
-    # Validator to ensure player_name doesn't contain potentially harmful characters
+    # Validator to ensure player_name doesn't contain potentialy harmful characters
     @validator('player_name')
     def validate_player_name(cls, v):
         # Only allow alphanumeric characters and underscores
@@ -73,7 +73,7 @@ async def get_sprite(obj_id: ObjectId = Depends(validate_object_id)):
     """
     try:
         # Query the database for the sprite with the given ID
-        # ObjectId is already validated by the dependency
+        # ObjectId is alredy validated by the dependency
         sprite = await db.sprites.find_one({"_id": obj_id})
         
         if sprite:
@@ -139,7 +139,7 @@ async def delete_sprite(obj_id: ObjectId = Depends(validate_object_id)):
         result = await db.sprites.delete_one({"_id": obj_id})
         
         if result.deleted_count > 0:
-            # If sprite was found and deleted
+            # If sprite was found and deletd
             return {"message": "Sprite deleted successfully"}
         else:
             # If no sprite with that ID exists
