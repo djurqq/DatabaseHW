@@ -1,7 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from pydantic import BaseModel
+from bson import ObjectId  # Import ObjectId for MongoDB ID handling
 import motor.motor_asyncio
-    
+
 app = FastAPI()
 
 # Connect to Mongo Atlas
@@ -11,7 +12,7 @@ db = client.gassetsDB
 class PlayerScore(BaseModel):
     player_name: str
     score: int
-    
+
 @app.post("/upload_sprite")
 async def upload_sprite(file: UploadFile = File(...)):
     content = await file.read()
@@ -19,28 +20,28 @@ async def upload_sprite(file: UploadFile = File(...)):
     result = await db.sprites.insert_one(sprite_doc)
     return {"message": "Sprite uploaded", "id": str(result.inserted_id)}
 
-@app.get("/upload_sprite/{filename}")
-async def get_sprite(filename: str):
-    sprite = await db.sprites.find_one({"filename": filename})
+@app.get("/upload_sprite/{id}")
+async def get_sprite(id: str):
+    sprite = await db.sprites.find_one({"_id": ObjectId(id)})
     if not sprite:
         raise HTTPException(status_code=404, detail="Sprite not found")
     sprite["_id"] = str(sprite["_id"])  # Convert ObjectId to string
     return sprite
 
-@app.put("/upload_sprite/{filename}")
-async def update_sprite(filename: str, file: UploadFile = File(...)):
+@app.put("/upload_sprite/{id}")
+async def update_sprite(id: str, file: UploadFile = File(...)):
     content = await file.read()
     result = await db.sprites.update_one(
-        {"filename": filename},
+        {"_id": ObjectId(id)},
         {"$set": {"content": content}}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Sprite not found")
     return {"message": "Sprite updated"}
 
-@app.delete("/upload_sprite/{filename}")
-async def delete_sprite(filename: str):
-    result = await db.sprites.delete_one({"filename": filename})
+@app.delete("/upload_sprite/{id}")
+async def delete_sprite(id: str):
+    result = await db.sprites.delete_one({"_id": ObjectId(id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Sprite not found")
     return {"message": "Sprite deleted"}
@@ -52,28 +53,28 @@ async def upload_audio(file: UploadFile = File(...)):
     result = await db.audio.insert_one(audio_doc)
     return {"message": "Audio file uploaded", "id": str(result.inserted_id)}
 
-@app.get("/upload_audio/{filename}")
-async def get_audio(filename: str):
-    audio = await db.audio.find_one({"filename": filename})
+@app.get("/upload_audio/{id}")
+async def get_audio(id: str):
+    audio = await db.audio.find_one({"_id": ObjectId(id)})
     if not audio:
         raise HTTPException(status_code=404, detail="Audio file not found")
     audio["_id"] = str(audio["_id"])  # Convert ObjectId to string
     return audio
 
-@app.put("/upload_audio/{filename}")
-async def update_audio(filename: str, file: UploadFile = File(...)):
+@app.put("/upload_audio/{id}")
+async def update_audio(id: str, file: UploadFile = File(...)):
     content = await file.read()
     result = await db.audio.update_one(
-        {"filename": filename},
+        {"_id": ObjectId(id)},
         {"$set": {"content": content}}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Audio file not found")
     return {"message": "Audio file updated"}
 
-@app.delete("/upload_audio/{filename}")
-async def delete_audio(filename: str):
-    result = await db.audio.delete_one({"filename": filename})
+@app.delete("/upload_audio/{id}")
+async def delete_audio(id: str):
+    result = await db.audio.delete_one({"_id": ObjectId(id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Audio file not found")
     return {"message": "Audio file deleted"}
